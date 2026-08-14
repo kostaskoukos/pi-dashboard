@@ -1,9 +1,17 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "pi-dashboard"
 version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.14"
 dependencies = [
-    "fastapi[standard]>=0.141.1",
+    "fastapi>=0.141.1",
     "jinja2>=3.1.6",
+    "uvicorn>=0.35.0",
 ]
+
+[tool.setuptools]
+py-modules = ["main"]
