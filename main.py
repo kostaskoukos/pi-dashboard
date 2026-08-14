@@ -1,6 +1,13 @@
-def main():
-    print("Hello from pi-dashboard!")
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory="templates")
+app = FastAPI()
 
 
-if __name__ == "__main__":
-    main()
+@app.get("/", response_class=HTMLResponse)
+def read_root(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="index.html", context={"request": request}
+    )
