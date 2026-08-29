@@ -30,7 +30,7 @@ def get_container_stats(container):
 
         cpu = None
         try:
-            if "cpu_stats" in stats and "usage" in stats["cpu_stats"]:
+            if "cpu_stats" in stats and "cpu_usage" in stats["cpu_stats"]:
                 cpu_delta = (
                     stats["cpu_stats"]["cpu_usage"]["total_usage"]
                     - stats["precpu_stats"]["cpu_usage"]["total_usage"]
@@ -48,6 +48,7 @@ def get_container_stats(container):
         except KeyError as e:
             print(f"KeyError while calculating CPU usage for container {container.name}: {e}")
             cpu = None
+
         return {
             "name": container.name,
             "status": container.status,
