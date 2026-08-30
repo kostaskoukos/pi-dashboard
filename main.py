@@ -18,14 +18,20 @@ def get_container_stats(container):
 
         memory = None
         try:
-            if "memory_stats" in stats and "usage" in stats["memory_stats"] and "limit" in stats["memory_stats"]:
+            if (
+                "memory_stats" in stats
+                and "usage" in stats["memory_stats"]
+                and "limit" in stats["memory_stats"]
+            ):
                 used_memory = (
                     stats["memory_stats"]["usage"]
                     - stats["memory_stats"]["stats"]["inactive_file"]
                 )
                 memory = used_memory / stats["memory_stats"]["limit"] * 100
         except KeyError as e:
-            print(f"KeyError while calculating memory usage for container {container.name}: {e}")
+            print(
+                f"KeyError while calculating memory usage for container {container.name}: {e}"
+            )
             memory = None
 
         cpu = None
@@ -46,11 +52,14 @@ def get_container_stats(container):
                     else 0
                 )
         except KeyError as e:
-            print(f"KeyError while calculating CPU usage for container {container.name}: {e}")
+            print(
+                f"KeyError while calculating CPU usage for container {container.name}: {e}"
+            )
             cpu = None
 
         return {
             "name": container.name,
+            "url": container.labels.get("url", None),
             "status": container.status,
             "memory": memory,
             "cpu": cpu,
