@@ -1,15 +1,209 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pi-dashboard</title>
+    <style>
+      :root {
+        --bg: #242124;
+        --text: #f1f5f9;
+        --card: color-mix(in srgb, var(--bg) 84%, var(--text) 16%);
+        --muted: color-mix(in srgb, var(--text) 48%, var(--bg) 52%);
+        --border: color-mix(in srgb, var(--text) 12%, var(--bg) 88%);
+        --running: #22c55e;
+        --exited: #ef4444;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Document</title>
-</head>
+      * {
+        box-sizing: border-box;
+      }
 
-<body>
-  <p>test</p>
-  <p>{{ containers }}</p>
-</body>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: monospace;
+      }
 
+      .page {
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      .header {
+        margin-bottom: 1rem;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 1.4rem;
+        letter-spacing: 0.02em;
+      }
+
+      .header p {
+        margin: 0.35rem 0 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .container-list {
+        display: grid;
+        gap: 0.875rem;
+      }
+
+      .container-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+      }
+
+      .container-link {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container-link:focus-visible .container-card,
+      .container-link:hover .container-card {
+        border-color: color-mix(in srgb, var(--text) 30%, var(--bg) 70%);
+        transform: translateY(-1px);
+      }
+
+      .container-header {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin-bottom: 0.9rem;
+      }
+
+      .status-dot {
+        width: 0.8rem;
+        height: 0.8rem;
+        border-radius: 999px;
+        flex: none;
+      }
+
+      .status-running {
+        background: var(--running);
+        box-shadow: 0 0 0 4px
+          color-mix(in srgb, var(--running) 20%, transparent);
+      }
+
+      .status-exited {
+        background: var(--exited);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--exited) 20%, transparent);
+      }
+
+      .container-name {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        word-break: break-word;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+
+      .stat {
+        min-width: 0;
+      }
+
+      .stat-label {
+        display: block;
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.25rem;
+      }
+
+      .stat-value {
+        font-size: 1rem;
+        font-weight: 400;
+      }
+
+      .empty-state {
+        padding: 1.25rem;
+        color: var(--muted);
+        border: 1px dashed var(--border);
+        border-radius: 1rem;
+      }
+
+      @media (min-width: 768px) {
+        .page {
+          padding: 2rem;
+        }
+
+        .header h1 {
+          font-size: 1.7rem;
+        }
+
+        .container-card {
+          padding: 1.25rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="header">
+        <h1>Dashboard</h1>
+        <p>Live CPU and memory usage for each container.</p>
+      </header>
+
+      {% if not containers %}
+        <p class="empty-state">No containers found.</p>
+      {% else %}
+        <section class="container-list" aria-label="Container list">
+          {% for container in containers if container %}
+            {% if container.url is not none %}
+              <a class="container-link" href="{{ container.url }}" target="_blank" rel="noopener noreferrer">
+            {% else %}
+              <div class="container-link">
+            {% endif %}
+            <article class="container-card">
+              <div class="container-header">
+                <span
+                  class="status-dot {% if container.status == 'running' %}status-running{% else %}status-exited{% endif %}"
+                  aria-hidden="true"
+                ></span>
+                <h2 class="container-name">{{ container.name }}</h2>
+              </div>
+
+              <div class="stats">
+                <div class="stat">
+                  <span class="stat-label">Memory %</span>
+                  <span class="stat-value">
+                    {% if container.memory is not none %}{{
+                    '%.3f'|format(container.memory) }}%{% else %}—{% endif %}
+                  </span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">CPU %</span>
+                  <span class="stat-value">
+                    {% if container.cpu is not none %}{{
+                    '%.3f'|format(container.cpu) }}%{% else %}—{% endif %}
+                  </span>
+                </div>
+              </div>
+            </article>
+            {% if container.url is not none %}
+              </a>
+            {% else %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </section>
+      {% endif %}
+    </main>
+  </body>
 </html>
