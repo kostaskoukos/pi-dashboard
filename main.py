@@ -1,4 +1,7 @@
+import asyncio
 import json
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import asynccontextmanager
 
 import docker
 from fastapi import FastAPI, Request
@@ -6,9 +9,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 docker_client = docker.from_env()
-
-templates = Jinja2Templates(directory="templates")
-app = FastAPI()
 
 
 def get_container_stats(container):
@@ -69,11 +69,40 @@ def get_container_stats(container):
         return None
 
 
+def get_all_container_stats():
+    all_containers = docker_client.containers.list(all=True)
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        results = executor.map(get_container_stats, all_containers)
+        return [res for res in results if res is not None]
+
+
+containers = []
+
+
+async def update_stats_bg():
+    global containers
+    while True:
+        containers = await asyncio.to_thread(get_all_container_stats)
+        print("Updated container stats.")
+        await asyncio.sleep(3)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(update_stats_bg())
+    yield
+    task.cancel()
+
+
+templates = Jinja2Templates(directory="templates")
+app = FastAPI(lifespan=lifespan)
+
+
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
-    containers = docker_client.containers.list(all=True)
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"containers": [get_container_stats(c) for c in containers]},
+        context={"containers": containers},
     )
