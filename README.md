@@ -1,6 +1,6 @@
 # Pi Dashboard
 
-Pi Dashboard is a small FastAPI app that shows a live overview of Docker containers on the host. It polls the Docker daemon, calculates CPU and memory usage, and renders the results in a simple browser dashboard.
+Pi Dashboard is a small FastAPI app that shows a live overview of Docker containers on the host. It polls the Docker daemon, calculates CPU and memory usage, and renders the results in a simple browser dashboard. See a short technical write-up [here](https://kostaskoukos.github.io/blog/pi-dashboard/).
 
 ## Features
 
